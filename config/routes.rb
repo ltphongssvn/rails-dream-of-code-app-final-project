@@ -1,16 +1,35 @@
 Rails.application.routes.draw do
-  resource :session
-  resources :passwords, param: :token
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  # Root path - landing page that's accessible to everyone
+  # Logged-in users will be automatically redirected to their time entries
+  root "home#index"
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
-  get "up" => "rails/health#show", as: :rails_health_check
+  # Authentication - using singular resource for session
+  resource :session, only: [:new, :create, :destroy]
+  resources :passwords, only: [:new, :create, :edit, :update]
 
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+  # Main application resources
+  resources :time_entries
+  resources :categories do
+    member do
+      get :subcategories
+    end
+  end
 
-  # Defines the root path route ("/")
-  # root "posts#index"
+  resources :goals do
+    resources :goal_completions, only: [:create, :update]
+  end
+
+  # Dashboard
+  get 'dashboard', to: 'dashboard#show'
+
+  # Reports
+  namespace :reports do
+    get 'daily', to: 'daily#show'
+    get 'weekly', to: 'weekly#show'
+    get 'monthly', to: 'monthly#show'
+    get 'category_breakdown', to: 'categories#index'
+  end
+
+  # User registration if needed
+  resources :registrations, only: [:new, :create]
 end

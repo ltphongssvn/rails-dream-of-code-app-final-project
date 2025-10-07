@@ -16,7 +16,6 @@ class Goal < ApplicationRecord
   scope :by_type, ->(type) { where(goal_type: type) }
 
   # This scope needs to match exact day, not partial match
-  # The LIKE query was too broad - it would match "Monday" in a string containing "Monday,Tuesday"
   scope :for_day_of_week, ->(day) {
     where("days_of_week LIKE ? OR days_of_week LIKE ? OR days_of_week LIKE ? OR days_of_week = ?",
           "%[\"#{day}\"%",     # Matches ["Monday"] or ["Monday","Tuesday"]
@@ -39,7 +38,7 @@ class Goal < ApplicationRecord
   validates :hour, numericality: {
     greater_than_or_equal_to: 0,
     less_than_or_equal_to: 23,
-    message: "must be between 0 and 23",  # Override Rails' default messages
+    message: "must be between 0 and 23",
     allow_nil: true
   }
 
@@ -49,18 +48,36 @@ class Goal < ApplicationRecord
 
   # Callbacks
   before_validation :set_defaults
-  after_initialize :deserialize_days_of_week
   before_save :serialize_days_of_week
 
-  # Temporary attribute for array handling
-  attr_accessor :days_array
+  # Public getter for days_array - always parses fresh from days_of_week
+  def days_array
+    return [] if days_of_week.blank?
+
+    begin
+      parsed = JSON.parse(days_of_week)
+      parsed.is_a?(Array) ? parsed : []
+    rescue JSON::ParserError
+      []
+    end
+  end
+
+  # Public setter for days_array
+  def days_array=(value)
+    # Directly update days_of_week when days_array is set
+    if value.nil? || value.empty?
+      self.days_of_week = '[]'
+    else
+      self.days_of_week = value.to_json
+    end
+  end
 
   # Check if goal applies to a specific date
   def applies_to_date?(date)
     return false unless active?
 
     day_name = date.strftime('%A')
-    days_list = get_days_array
+    days_list = days_array
 
     # If no specific days set or empty array, goal applies to all days
     return true if days_list.empty? || days_list == []
@@ -114,50 +131,39 @@ class Goal < ApplicationRecord
   end
 
   # Calculate current streak of consecutive achievements
-
-  # Check and record completion based on actual time tracked
   def current_streak
     return 0 if goal_completions.empty?
-    
+
+    # Get all completions ordered by date descending
+    recent_completions = goal_completions.order(date: :desc)
+
+    # If the most recent completion wasn't achieved, streak is 0
+    return 0 unless recent_completions.first&.achieved?
+
     streak = 0
-    current_date = Date.today
-    checking_consecutive = false
-    
-    # Work backwards from today
+    current_date = recent_completions.first.date
+
+    # Work backwards from the most recent completion
     while current_date >= created_at.to_date
-      # Skip days where the goal doesn't apply
       if applies_to_date?(current_date)
         completion = goal_completions.find_by(date: current_date)
-        
-        # Special handling for the most recent applicable day
-        if !checking_consecutive
-          # We haven't started checking consecutive days yet
-          if completion && !completion.achieved?
-            # Most recent applicable day was a failure - streak is 0
-            return 0
-          elsif completion && completion.achieved?
-            # Start counting from here
-            streak = 1
-            checking_consecutive = true
-          end
-          # If no completion on most recent applicable day, keep looking back
-        else
-          # We're now checking for consecutive achievements
-          if completion && completion.achieved?
-            streak += 1
-          else
-            # Hit a gap or failure - streak ends here
-            break
-          end
+
+        # If we find a day that should have been completed but wasn't achieved
+        if completion.nil? || !completion.achieved?
+          # Only break if this isn't the first date we're checking
+          break if streak > 0 || completion&.achieved? == false
+        elsif completion&.achieved?
+          streak += 1
         end
       end
-      
+
       current_date -= 1.day
     end
-    
+
     streak
   end
 
+  # Check and record completion based on actual time tracked
   def check_and_record_completion(date)
     # Find or initialize a completion record for this date
     completion = goal_completions.find_or_initialize_by(date: date)
@@ -211,7 +217,8 @@ class Goal < ApplicationRecord
 
   def set_defaults
     self.active = true if active.nil?
-    self.days_array ||= []
+    # Initialize days_of_week if it's blank
+    self.days_of_week = '[]' if days_of_week.blank?
   end
 
   def hour_required_for_specific_hour_goals
@@ -228,45 +235,18 @@ class Goal < ApplicationRecord
   end
 
   def days_of_week_format
-    return unless days_array.present?
+    # Validate the days array format
+    days_list = days_array
+    return if days_list.blank?
 
-    invalid_days = days_array - DAYS_OF_WEEK
+    invalid_days = days_list - DAYS_OF_WEEK
     if invalid_days.any?
       errors.add(:days_of_week, "contains invalid days: #{invalid_days.join(', ')}")
     end
   end
 
-  def deserialize_days_of_week
-    if days_of_week.present?
-      begin
-        parsed = JSON.parse(days_of_week)
-        # Handle both array and string formats
-        self.days_array = parsed.is_a?(Array) ? parsed : []
-      rescue JSON::ParserError
-        self.days_array = []
-      end
-    else
-      self.days_array = []
-    end
-  end
-
   def serialize_days_of_week
-    if days_array.present? && days_array.any?
-      self.days_of_week = days_array.to_json
-    elsif days_array.blank? || days_array.empty?
-      # Store empty array as JSON string for consistency
-      self.days_of_week = '[]'
-    end
-  end
-
-  def get_days_array
-    return [] if days_of_week.blank?
-
-    begin
-      parsed = JSON.parse(days_of_week)
-      parsed.is_a?(Array) ? parsed : []
-    rescue JSON::ParserError
-      []
-    end
+    # This is now handled directly in the days_array= setter
+    # We keep this method empty to avoid conflicts
   end
 end

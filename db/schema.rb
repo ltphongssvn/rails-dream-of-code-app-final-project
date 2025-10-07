@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_06_185445) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_07_130756) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -95,6 +95,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_06_185445) do
     t.string "first_name"
     t.string "last_name"
     t.string "time_zone"
+    t.string "password_reset_token"
+    t.datetime "password_reset_sent_at"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
