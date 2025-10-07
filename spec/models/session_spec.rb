@@ -7,7 +7,15 @@ RSpec.describe Session, type: :model do
   end
 
   describe 'validations' do
-    let(:user) { User.create!(email_address: 'test@example.com', password: 'password123') }
+    let(:user) {
+      User.create!(
+        email_address: 'test@example.com',
+        password: 'password123',
+        first_name: 'Jane',
+        last_name: 'Smith',
+        time_zone: 'Eastern Time (US & Canada)'
+      )
+    }
 
     it 'requires a user' do
       session = Session.new(ip_address: '127.0.0.1', user_agent: 'Mozilla/5.0')
@@ -45,7 +53,15 @@ RSpec.describe Session, type: :model do
   end
 
   describe 'session management' do
-    let(:user) { User.create!(email_address: 'test@example.com', password: 'password123') }
+    let(:user) {
+      User.create!(
+        email_address: 'manager@example.com',
+        password: 'password123',
+        first_name: 'Bob',
+        last_name: 'Manager',
+        time_zone: 'Central Time (US & Canada)'
+      )
+    }
 
     it 'allows multiple sessions for the same user' do
       session1 = Session.create!(user: user, ip_address: '192.168.1.1', user_agent: 'Chrome')
