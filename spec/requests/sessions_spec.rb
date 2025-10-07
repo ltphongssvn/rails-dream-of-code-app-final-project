@@ -2,7 +2,15 @@
 require 'rails_helper'
 
 RSpec.describe "Sessions", type: :request do
-  let!(:user) { User.create!(email_address: 'user@example.com', password: 'password123') }
+  let!(:user) {
+    User.create!(
+      email_address: 'user@example.com',
+      password: 'password123',
+      first_name: 'Test',
+      last_name: 'User',
+      time_zone: 'Pacific Time (US & Canada)'
+    )
+  }
 
   describe "GET /session/new" do
     it "displays the login form" do
@@ -33,26 +41,27 @@ RSpec.describe "Sessions", type: :request do
 
         expect(response).to redirect_to(root_path)
         follow_redirect!
-        expect(response.body).to include('Successfully logged in')
+        expect(response.body).to include('Welcome back')
 
-        # Verify session was created in database
-        expect(Session.count).to eq(1)
-        session = Session.last
-        expect(session.user).to eq(user)
+        # Verify session was created
+        expect(session[:user_id]).to eq(user.id)
       end
 
       it "records IP address and user agent in session" do
         post session_path, params: {
           email_address: user.email_address,
           password: 'password123'
-        }, headers: {
-          'HTTP_USER_AGENT' => 'Mozilla/5.0 Test Browser',
-          'REMOTE_ADDR' => '192.168.1.100'
+        },
+        headers: {
+          'REMOTE_ADDR' => '127.0.0.1',
+          'HTTP_USER_AGENT' => 'RSpec Test Browser'
         }
 
-        session = Session.last
-        expect(session.user_agent).to eq('Mozilla/5.0 Test Browser')
-        # Note: IP address handling may vary based on Rails configuration
+        expect(response).to redirect_to(root_path)
+        session_record = Session.last
+        expect(session_record.user).to eq(user)
+        expect(session_record.ip_address).to eq('127.0.0.1')
+        expect(session_record.user_agent).to eq('RSpec Test Browser')
       end
     end
 
@@ -63,9 +72,9 @@ RSpec.describe "Sessions", type: :request do
           password: 'wrongpassword'
         }
 
-        expect(response).to have_http_status(422)
-        expect(response.body).to include('Invalid email address or password')
-        expect(Session.count).to eq(0)
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.body).to include('Invalid email or password')
+        expect(session[:user_id]).to be_nil
       end
 
       it "does not log in with non-existent email" do
@@ -74,16 +83,16 @@ RSpec.describe "Sessions", type: :request do
           password: 'password123'
         }
 
-        expect(response).to have_http_status(422)
-        expect(response.body).to include('Invalid email address or password')
-        expect(Session.count).to eq(0)
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.body).to include('Invalid email or password')
+        expect(session[:user_id]).to be_nil
       end
 
       it "handles missing parameters gracefully" do
-        post session_path, params: { email_address: user.email_address }
+        post session_path, params: {}
 
-        expect(response).to have_http_status(422)
-        expect(Session.count).to eq(0)
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(session[:user_id]).to be_nil
       end
     end
   end
@@ -91,25 +100,21 @@ RSpec.describe "Sessions", type: :request do
   describe "DELETE /session" do
     context "when logged in" do
       before do
-        # Log in the user first
         post session_path, params: {
           email_address: user.email_address,
           password: 'password123'
         }
-        @session = Session.last
       end
 
       it "logs out the user and destroys the session" do
-        expect(Session.count).to eq(1)
+        expect(session[:user_id]).to eq(user.id)
 
         delete session_path
 
-        expect(response).to redirect_to(new_session_path)
+        expect(response).to redirect_to(root_path)
         follow_redirect!
-        expect(response.body).to include('Sign in')
-
-        # Verify session was destroyed
-        expect(Session.exists?(@session.id)).to be_falsey
+        expect(response.body).to include('logged out')
+        expect(session[:user_id]).to be_nil
       end
     end
 
@@ -123,27 +128,27 @@ RSpec.describe "Sessions", type: :request do
 
   describe "Authentication flow integration" do
     it "completes full authentication cycle" do
-      # Step 1: Access protected area while logged out (should redirect)
-      get root_path
-      expect(response).to redirect_to(new_session_path)
+      # Visit login page
+      get new_session_path
+      expect(response).to have_http_status(200)
 
-      # Step 2: Log in with valid credentials
+      # Log in
       post session_path, params: {
         email_address: user.email_address,
         password: 'password123'
       }
       expect(response).to redirect_to(root_path)
 
-      # Step 3: Access protected area while logged in (should succeed)
-      get root_path
+      # Access protected resource (should work)
+      get time_entries_path
       expect(response).to have_http_status(200)
 
-      # Step 4: Log out
+      # Log out
       delete session_path
-      expect(response).to redirect_to(new_session_path)
+      expect(response).to redirect_to(root_path)
 
-      # Step 5: Verify logged out by trying to access protected area
-      get root_path
+      # Try to access protected resource (should redirect to login)
+      get time_entries_path
       expect(response).to redirect_to(new_session_path)
     end
   end

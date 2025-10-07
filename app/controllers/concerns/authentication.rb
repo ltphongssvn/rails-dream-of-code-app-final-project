@@ -35,6 +35,8 @@ module Authentication
     end
 
     def after_authentication_url
+      # Return to the page they were trying to access, or default to root
+      # Root page handles both authenticated and unauthenticated users appropriately
       session.delete(:return_to_after_authenticating) || root_url
     end
 

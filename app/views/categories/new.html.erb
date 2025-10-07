@@ -1,0 +1,11 @@
+<%# app/views/categories/new.html.erb %>
+<div class="container mx-auto px-4 py-8">
+  <div class="mb-6">
+    <%= link_to "← Back to Categories", categories_path, class: "text-blue-600 hover:text-blue-800" %>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-md p-8 max-w-2xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Create New Category</h1>
+    <%= render 'form', category: @category %>
+  </div>
+</div>
