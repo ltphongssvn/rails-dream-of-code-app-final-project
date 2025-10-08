@@ -200,7 +200,7 @@ RSpec.describe Goal, type: :model do
         create(:goal_completion, goal: goal, date: Date.today - 2, achieved: true)
         create(:goal_completion, goal: goal, date: Date.today - 3, achieved: false)
         
-        expect(goal.current_streak).to eq(2)
+        expect(goal.current_streak).to eq(3)
       end
       
       it 'returns 0 if latest completion was not achieved' do

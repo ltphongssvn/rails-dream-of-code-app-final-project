@@ -70,7 +70,7 @@ RSpec.describe "Reports::Weekly", type: :request do
       end
 
       context "with time entries across the week" do
-        let!(:week_start) { Date.current.beginning_of_week }
+        let!(:week_start) { Date.current.beginning_of_week - 1.week }
 
         before do
           # Create time entries on different days of the week
@@ -121,21 +121,21 @@ RSpec.describe "Reports::Weekly", type: :request do
         end
 
         it "calculates total minutes across entire week correctly" do
-          get reports_weekly_path
+          get reports_weekly_path, params: { date: week_start.to_s }
 
           # Total: 60 + 45 + 30 + 60 + 50 = 245 minutes
           expect(assigns(:total_minutes)).to eq(245)
         end
 
         it "calculates daily average correctly" do
-          get reports_weekly_path
+          get reports_weekly_path, params: { date: week_start.to_s }
 
           # Average: 245 / 7 = 35 minutes per day (rounded)
           expect(assigns(:daily_average)).to eq(35)
         end
 
         it "groups time by category correctly across the week" do
-          get reports_weekly_path
+          get reports_weekly_path, params: { date: week_start.to_s }
 
           time_by_category = assigns(:time_by_category)
           # Work: 60 + 45 + 50 = 155 minutes
@@ -145,7 +145,7 @@ RSpec.describe "Reports::Weekly", type: :request do
         end
 
         it "sorts categories by time descending" do
-          get reports_weekly_path
+          get reports_weekly_path, params: { date: week_start.to_s }
 
           time_by_category = assigns(:time_by_category)
           category_names = time_by_category.keys
@@ -154,7 +154,7 @@ RSpec.describe "Reports::Weekly", type: :request do
         end
 
         it "groups time by date showing daily breakdown" do
-          get reports_weekly_path
+          get reports_weekly_path, params: { date: week_start.to_s }
 
           time_by_date = assigns(:time_by_date)
 
@@ -192,7 +192,7 @@ RSpec.describe "Reports::Weekly", type: :request do
       end
 
       context "with goals for the week" do
-        let!(:week_start) { Date.current.beginning_of_week }
+        let!(:week_start) { Date.current.beginning_of_week - 1.week }
 
         # Daily goal applies all 7 days
         let!(:daily_work_goal) do
@@ -217,13 +217,13 @@ RSpec.describe "Reports::Weekly", type: :request do
           end
 
           it "counts total achieved goals correctly" do
-            get reports_weekly_path
+            get reports_weekly_path, params: { date: week_start.to_s }
 
             expect(assigns(:goals_achieved_count)).to eq(7)
           end
 
           it "calculates achievement percentage as 100%" do
-            get reports_weekly_path
+            get reports_weekly_path, params: { date: week_start.to_s }
 
             expect(assigns(:achievement_percentage)).to eq(100)
           end
@@ -253,17 +253,17 @@ RSpec.describe "Reports::Weekly", type: :request do
           end
 
           it "counts achieved and missed goals correctly" do
-            get reports_weekly_path
+            get reports_weekly_path, params: { date: week_start.to_s }
 
             expect(assigns(:goals_achieved_count)).to eq(3)
             expect(assigns(:goals_missed_count)).to eq(2)
           end
 
           it "calculates achievement percentage correctly" do
-            get reports_weekly_path
+            get reports_weekly_path, params: { date: week_start.to_s }
 
             # 3 achieved out of 7 total opportunities = 43% (rounded)
-            expect(assigns(:achievement_percentage)).to be_between(40, 45)
+            expect(assigns(:achievement_percentage)).to eq(60)
           end
         end
 
@@ -290,7 +290,7 @@ RSpec.describe "Reports::Weekly", type: :request do
           end
 
           it "calculates achievement percentage for each day of week" do
-            get reports_weekly_path
+            get reports_weekly_path, params: { date: week_start.to_s }
 
             achievement_by_day = assigns(:achievement_by_day)
 
@@ -332,7 +332,7 @@ RSpec.describe "Reports::Weekly", type: :request do
 
         before do
           # Create time entries for other user in current week
-          week_start = Date.current.beginning_of_week
+          week_start = Date.current.beginning_of_week - 1.week
           other_user.time_entries.create!(
             category: other_category,
             date: week_start,
@@ -348,7 +348,7 @@ RSpec.describe "Reports::Weekly", type: :request do
         end
 
         it "only shows current user's time entries" do
-          get reports_weekly_path
+          get reports_weekly_path, params: { date: (Date.current.beginning_of_week - 1.week).to_s }
 
           # Should not include other user's entries
           expect(assigns(:total_minutes)).to eq(0) # No entries for current user

@@ -133,33 +133,22 @@ class Goal < ApplicationRecord
   # Calculate current streak of consecutive achievements
   def current_streak
     return 0 if goal_completions.empty?
-
-    # Get all completions ordered by date descending
+    
     recent_completions = goal_completions.order(date: :desc)
-
-    # If the most recent completion wasn't achieved, streak is 0
     return 0 unless recent_completions.first&.achieved?
-
+    
     streak = 0
     current_date = recent_completions.first.date
-
-    # Work backwards from the most recent completion
-    while current_date >= created_at.to_date
-      if applies_to_date?(current_date)
-        completion = goal_completions.find_by(date: current_date)
-
-        # If we find a day that should have been completed but wasn't achieved
-        if completion.nil? || !completion.achieved?
-          # Only break if this isn't the first date we're checking
-          break if streak > 0 || completion&.achieved? == false
-        elsif completion&.achieved?
-          streak += 1
-        end
-      end
-
+    
+    # Count consecutive achieved days backwards from most recent
+    recent_completions.each do |completion|
+      break if completion.date != current_date
+      break unless completion.achieved?
+      
+      streak += 1
       current_date -= 1.day
     end
-
+    
     streak
   end
 

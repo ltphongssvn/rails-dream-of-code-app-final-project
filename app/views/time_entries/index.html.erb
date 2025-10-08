@@ -1,4 +1,104 @@
-<div>
-  <h1 class="font-bold text-4xl">TimeEntries#index</h1>
-  <p>Find me in app/views/time_entries/index.html.erb</p>
+<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header with date navigation -->
+  <div class="mb-6 flex items-center justify-between">
+    <h1 class="text-3xl font-bold text-gray-900">Time Entries</h1>
+    <div class="flex items-center gap-4">
+      <%= link_to "← Previous", time_entries_path(date: @date - 1.day), 
+                  class: "px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900" %>
+      <span class="px-4 py-2 text-lg font-medium"><%= @date.strftime("%B %d, %Y") %></span>
+      <%= link_to "Next →", time_entries_path(date: @date + 1.day), 
+                  class: "px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900" %>
+      <% if @date != Date.current %>
+        <%= link_to "Today", time_entries_path, 
+                    class: "ml-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Summary stats -->
+  <div class="mb-6 grid grid-cols-3 gap-4">
+    <div class="bg-white rounded-lg shadow px-6 py-4">
+      <p class="text-sm text-gray-600">Total Time Logged</p>
+      <p class="text-2xl font-bold"><%= @total_minutes %> minutes</p>
+      <p class="text-sm text-gray-500"><%= (@total_minutes / 60.0).round(1) %> hours</p>
+    </div>
+    <div class="bg-white rounded-lg shadow px-6 py-4">
+      <p class="text-sm text-gray-600">Hours Tracked</p>
+      <p class="text-2xl font-bold"><%= @time_entries.count %></p>
+    </div>
+    <div class="bg-white rounded-lg shadow px-6 py-4">
+      <p class="text-sm text-gray-600">Categories Used</p>
+      <p class="text-2xl font-bold"><%= @time_entries.map(&:category_id).uniq.count %></p>
+    </div>
+  </div>
+
+  <!-- Hourly grid -->
+  <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hour</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <% (0..23).each do |hour| %>
+          <% entry = @hourly_entries[hour] %>
+          <tr class="<%= entry ? 'bg-blue-50' : 'hover:bg-gray-50' %>">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              <%= Time.parse("#{hour}:00").strftime("%-l:00 %p") %>
+            </td>
+            <% if entry %>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 text-xs font-semibold rounded-full" 
+                      style="background-color: <%= entry.category.color %>20; color: <%= entry.category.color %>">
+                  <%= entry.category.name %>
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <%= entry.duration_minutes %> min
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                <%= entry.notes || "-" %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <%= link_to "Edit", edit_time_entry_path(entry), 
+                            class: "text-indigo-600 hover:text-indigo-900 mr-3" %>
+                <%= link_to "Delete", time_entry_path(entry), 
+                            method: :delete, 
+                            data: { confirm: "Are you sure?" },
+                            class: "text-red-600 hover:text-red-900" %>
+              </td>
+            <% else %>
+              <td colspan="3" class="px-6 py-4 text-sm text-gray-400 italic">
+                No entry
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <%= link_to "+ Add Entry", new_time_entry_path(date: @date, hour: hour), 
+                            class: "text-green-600 hover:text-green-900" %>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Categories breakdown -->
+  <% if @categories_breakdown && @categories_breakdown.any? %>
+    <div class="mt-6 bg-white shadow-lg rounded-lg p-6">
+      <h2 class="text-lg font-semibold mb-4">Time by Category</h2>
+      <div class="space-y-2">
+        <% @categories_breakdown.each do |(category_id, category_name), minutes| %>
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium"><%= category_name %></span>
+            <span class="text-sm text-gray-600"><%= minutes %> min (<%= (minutes / 60.0).round(1) %> hrs)</span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
 </div>
