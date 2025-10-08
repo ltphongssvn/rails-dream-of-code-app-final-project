@@ -1,5 +1,10 @@
 <%# app/views/categories/index.html.erb %>
 <div class="container mx-auto px-4 py-8">
+  <!-- Back to Home Button -->
+  <div class="mb-4">
+    <%= link_to "← Back to Home", root_path, class: "text-blue-600 hover:text-blue-800 font-medium" %>
+  </div>
+
   <div class="flex justify-between items-center mb-8">
     <h1 class="text-3xl font-bold text-gray-800">My Categories</h1>
     <%= link_to "New Category", new_category_path, class: "bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors" %>
