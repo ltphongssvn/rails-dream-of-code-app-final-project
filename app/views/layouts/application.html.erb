@@ -17,6 +17,9 @@
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
   </head>
   <body>
+    <%# Navigation bar - only shown when authenticated %>
+    <%= render "shared/navigation" %>
+
     <%# Flash messages - displayed at the top of every page %>
     <% if flash.any? %>
       <div class="flash-messages">
@@ -27,7 +30,6 @@
         <% end %>
       </div>
     <% end %>
-    
     <%= yield %>
   </body>
 </html>
