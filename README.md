@@ -24,7 +24,11 @@ A full-featured time tracking application built with Ruby on Rails that helps us
 
 ## 🚀 Live Demo
 
-Visit the app at: http://localhost:3001 (when running locally)
+Visit the app at: 
+
+https://knifejaw.thanhphongle.net/ (when deployed to Railway)
+
+http://localhost:3001 (when running locally)
 
 ## 📋 Prerequisites
 
