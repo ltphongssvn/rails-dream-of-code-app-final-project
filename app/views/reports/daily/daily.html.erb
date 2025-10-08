@@ -1,0 +1,74 @@
+cat > app/views/reports/daily.html.erb << 'EOF'
+<!-- app/views/reports/daily.html.erb -->
+<div class="daily-report">
+  <h1>Daily Time Report for <%= @date.strftime("%B %d, %Y") %></h1>
+
+  <div class="report-summary">
+    <h2>Summary</h2>
+    <p>Total time tracked: <%= (@total_minutes / 60.0).round(1) %> hours (<%= @total_minutes %> minutes)</p>
+
+    <% if @goals_achieved_count > 0 || @goals_missed_count > 0 %>
+      <p>Goals achieved: <%= @goals_achieved_count %> / <%= @goals_achieved_count + @goals_missed_count %></p>
+      <p>Achievement rate: <%= @achievement_percentage %>%</p>
+    <% end %>
+  </div>
+
+  <% if @time_by_category.any? %>
+    <div class="category-breakdown">
+      <h2>Time by Category</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Time (minutes)</th>
+            <th>Percentage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @time_by_category.each do |category_name, minutes| %>
+            <tr>
+              <td><%= category_name %></td>
+              <td><%= minutes %></td>
+              <td><%= ((minutes.to_f / @total_minutes) * 100).round(1) %>%</td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p>No time entries recorded for this date.</p>
+  <% end %>
+
+  <% if @time_entries.any? %>
+    <div class="time-entries">
+      <h2>Detailed Time Entries</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Hour</th>
+            <th>Category</th>
+            <th>Duration</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @time_entries.each do |entry| %>
+            <tr>
+              <td><%= entry.display_hour %></td>
+              <td><%= entry.category.name %></td>
+              <td><%= entry.duration_minutes %> min</td>
+              <td><%= entry.notes %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+  <div class="navigation-links">
+    <%= link_to "Previous Day", reports_daily_path(date: @date - 1.day) %>
+    <%= link_to "Today", reports_daily_path %>
+    <%= link_to "Next Day", reports_daily_path(date: @date + 1.day) %>
+  </div>
+</div>
+EOF

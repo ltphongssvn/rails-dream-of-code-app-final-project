@@ -78,3 +78,4 @@ group :test do
   # Selenium webdriver for JavaScript testing
   gem "selenium-webdriver", "~> 4.16"
 end
+gem 'rails-controller-testing', group: :test

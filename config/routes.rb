@@ -24,7 +24,7 @@ Rails.application.routes.draw do
 
   # Reports
   namespace :reports do
-    get 'daily', to: 'daily#show'
+    get 'daily', to: 'daily#daily'
     get 'weekly', to: 'weekly#show'
     get 'monthly', to: 'monthly#show'
     get 'category_breakdown', to: 'categories#index'
@@ -33,3 +33,4 @@ Rails.application.routes.draw do
   # User registration if needed
   resources :registrations, only: [:new, :create]
 end
+

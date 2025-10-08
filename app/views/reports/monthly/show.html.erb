@@ -1,0 +1,25 @@
+<div class="monthly-report">
+  <h1>Monthly Report: <%= @month_start.strftime('%B %Y') %></h1>
+  
+  <div class="summary">
+    <p>Total Time: <%= @total_hours %> hours (<%= @total_minutes %> minutes)</p>
+    <p>Daily Average: <%= @daily_average.round %> minutes</p>
+  </div>
+  
+  <% if @time_by_category && @time_by_category.any? %>
+    <div class="categories">
+      <h2>Time by Category</h2>
+      <% @time_by_category.each do |category, minutes| %>
+        <p><%= category %>: <%= minutes %> minutes</p>
+      <% end %>
+    </div>
+  <% end %>
+  
+  <% if @goal_progress && @goal_progress.any? %>
+    <div class="goals">
+      <h2>Goal Progress</h2>
+      <p>Achievement: <%= @achievement_percentage.round %>%</p>
+      <p>Achieved: <%= @goals_achieved_count %> / <%= @total_goal_opportunities || 0 %></p>
+    </div>
+  <% end %>
+</div>
