@@ -1,0 +1,210 @@
+<%# app/views/goals/show.html.erb %>
+<div class="container mx-auto px-4 py-8">
+  <%# Header with back link %>
+  <div class="mb-6">
+    <%= link_to "← Back to Goals", goals_path, class: "text-blue-600 hover:text-blue-800" %>
+  </div>
+
+  <%# Goal Details Card %>
+  <div class="bg-white rounded-lg shadow-md p-8 mb-6">
+    <div class="flex items-start justify-between mb-6">
+      <div class="flex-1">
+        <div class="flex items-center space-x-3 mb-3">
+          <span class="px-4 py-2 text-sm font-semibold rounded-full <%= @goal.goal_type == 'daily' ? 'bg-blue-100 text-blue-800' : @goal.goal_type == 'weekly' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800' %>">
+            <%= @goal.goal_type.titleize %> Goal
+          </span>
+          <% if @goal.category.present? %>
+            <span class="px-4 py-2 text-sm font-semibold rounded-full bg-gray-100 text-gray-800">
+              <%= link_to @goal.category.name, category_path(@goal.category), class: "hover:text-blue-600" %>
+            </span>
+          <% end %>
+          <% if @goal.active %>
+            <span class="px-4 py-2 text-sm font-semibold rounded-full bg-green-50 text-green-700">
+              Active
+            </span>
+          <% else %>
+            <span class="px-4 py-2 text-sm font-semibold rounded-full bg-gray-50 text-gray-500">
+              Inactive
+            </span>
+          <% end %>
+        </div>
+
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">
+          <%= @goal.target_minutes %> minutes
+          <%= "of #{@goal.category.name}" if @goal.category.present? %>
+          <%= "at #{@goal.hour}:00" if @goal.hour.present? %>
+        </h1>
+
+        <% if @goal.days_array.present? && @goal.days_array.any? %>
+          <div class="flex flex-wrap gap-2 mt-3">
+            <span class="text-sm text-gray-600 mr-2">Active on:</span>
+            <% @goal.days_array.each do |day| %>
+              <span class="px-3 py-1 text-sm bg-indigo-50 text-indigo-700 rounded-md">
+                <%= day %>
+              </span>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-gray-600 mt-2">Applies every day</p>
+        <% end %>
+      </div>
+
+      <div class="flex space-x-2">
+        <%= link_to "Edit", edit_goal_path(@goal), class: "bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors" %>
+        <%= button_to "Delete", goal_path(@goal), method: :delete,
+            data: { confirm: "Are you sure you want to delete this goal?" },
+            class: "bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors" %>
+      </div>
+    </div>
+
+    <%# Statistics Grid %>
+    <div class="grid md:grid-cols-3 gap-6 mt-8 pt-6 border-t border-gray-200">
+      <%# Today's Progress %>
+      <div>
+        <h3 class="text-sm font-semibold text-gray-500 uppercase mb-2">Today</h3>
+        <% if @today_completion %>
+          <div class="text-3xl font-bold <%= @today_completion.achieved? ? 'text-green-600' : 'text-orange-600' %>">
+            <%= @today_completion.completion_percentage.round %>%
+          </div>
+          <p class="text-sm text-gray-600 mt-1">
+            <%= @today_completion.actual_minutes %> / <%= @goal.target_minutes %> minutes
+          </p>
+        <% else %>
+          <div class="text-3xl font-bold text-gray-400">
+            —
+          </div>
+          <p class="text-sm text-gray-500 mt-1">No activity yet today</p>
+        <% end %>
+      </div>
+
+      <%# Current Streak %>
+      <div>
+        <h3 class="text-sm font-semibold text-gray-500 uppercase mb-2">Current Streak</h3>
+        <div class="text-3xl font-bold text-blue-600">
+          <%= @current_streak %>
+          <span class="text-lg text-gray-600">days</span>
+        </div>
+        <p class="text-sm text-gray-600 mt-1">
+          <%= @current_streak > 0 ? "Keep it going!" : "Start your streak today" %>
+        </p>
+      </div>
+
+      <%# Completion Rate %>
+      <div>
+        <h3 class="text-sm font-semibold text-gray-500 uppercase mb-2">Overall Rate</h3>
+        <div class="text-3xl font-bold text-indigo-600">
+          <%= @goal.completion_rate %>%
+        </div>
+        <p class="text-sm text-gray-600 mt-1">All-time success rate</p>
+      </div>
+    </div>
+  </div>
+
+  <%# Time Period Statistics %>
+  <div class="grid md:grid-cols-2 gap-6 mb-6">
+    <%# This Week %>
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">This Week</h2>
+      <div class="relative pt-1">
+        <div class="flex mb-2 items-center justify-between">
+          <div>
+            <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-100">
+              Progress
+            </span>
+          </div>
+          <div class="text-right">
+            <span class="text-xs font-semibold inline-block text-blue-600">
+              <%= @week_percentage.round %>%
+            </span>
+          </div>
+        </div>
+        <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-100">
+          <div style="width:<%= @week_percentage %>%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-600 transition-all duration-500"></div>
+        </div>
+      </div>
+      <p class="text-sm text-gray-600">
+        <%= (Date.current.beginning_of_week).strftime("%b %d") %> - <%= (Date.current.end_of_week).strftime("%b %d, %Y") %>
+      </p>
+    </div>
+
+    <%# This Month %>
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">This Month</h2>
+      <div class="relative pt-1">
+        <div class="flex mb-2 items-center justify-between">
+          <div>
+            <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-green-600 bg-green-100">
+              Progress
+            </span>
+          </div>
+          <div class="text-right">
+            <span class="text-xs font-semibold inline-block text-green-600">
+              <%= @month_percentage.round %>%
+            </span>
+          </div>
+        </div>
+        <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-green-100">
+          <div style="width:<%= @month_percentage %>%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-600 transition-all duration-500"></div>
+        </div>
+      </div>
+      <p class="text-sm text-gray-600">
+        <%= Date.current.strftime("%B %Y") %>
+      </p>
+    </div>
+  </div>
+
+  <%# Recent Completions %>
+  <% if @recent_completions.any? %>
+    <div class="bg-white rounded-lg shadow-md p-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Recent Activity</h2>
+      <div class="space-y-3">
+        <% @recent_completions.each do |completion| %>
+          <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+            <div class="flex items-center space-x-4">
+              <div class="flex-shrink-0">
+                <% if completion.achieved? %>
+                  <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </div>
+                <% else %>
+                  <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </div>
+                <% end %>
+              </div>
+              <div>
+                <p class="font-semibold text-gray-900">
+                  <%= completion.date.strftime("%A, %B %d, %Y") %>
+                </p>
+                <p class="text-sm text-gray-600">
+                  <%= completion.actual_minutes %> / <%= @goal.target_minutes %> minutes
+                  (<%= completion.completion_percentage.round %>%)
+                </p>
+              </div>
+            </div>
+            <div class="text-right">
+              <% if completion.achieved? %>
+                <span class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                  Achieved
+                </span>
+              <% else %>
+                <span class="px-3 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
+                  <%= completion.actual_minutes > 0 ? 'Partial' : 'Missed' %>
+                </span>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <div class="bg-white rounded-lg shadow-md p-8 text-center">
+      <p class="text-gray-600">No activity recorded yet for this goal</p>
+      <p class="text-sm text-gray-500 mt-2">Start logging time entries to track your progress</p>
+    </div>
+  <% end %>
+</div>

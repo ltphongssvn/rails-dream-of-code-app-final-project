@@ -1,0 +1,61 @@
+<%# app/views/dashboard/show.html.erb %>
+<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Back to Home Button -->
+  <div class="mb-4">
+    <%= link_to "← Back to Home", root_path, class: "text-blue-600 hover:text-blue-800 font-medium" %>
+  </div>
+
+  <h1 class="text-3xl font-bold text-gray-900 mb-8">Dashboard</h1>
+
+  <!-- Today's Summary -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-lg font-medium text-gray-900 mb-2">Today's Progress</h3>
+      <p class="text-3xl font-bold text-indigo-600"><%= @todays_minutes || 0 %> min</p>
+      <p class="text-sm text-gray-500">Logged today</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-lg font-medium text-gray-900 mb-2">Active Goals</h3>
+      <p class="text-3xl font-bold text-green-600"><%= @active_goals&.count || 0 %></p>
+      <p class="text-sm text-gray-500">Goals to track</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-lg font-medium text-gray-900 mb-2">This Week</h3>
+      <p class="text-3xl font-bold text-blue-600"><%= @week_total || 0 %> min</p>
+      <p class="text-sm text-gray-500">Total this week</p>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="bg-white rounded-lg shadow p-6 mb-8">
+    <h2 class="text-xl font-semibold mb-4">Quick Actions</h2>
+    <div class="flex gap-4">
+      <%= link_to "Log Time", new_time_entry_path, class: "px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700" %>
+      <%= link_to "View Today", time_entries_path, class: "px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700" %>
+      <%= link_to "Manage Categories", categories_path, class: "px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700" %>
+      <%= link_to "Set Goals", goals_path, class: "px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700" %>
+    </div>
+  </div>
+
+  <!-- Recent Entries -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <h2 class="text-xl font-semibold mb-4">Recent Time Entries</h2>
+    <% if @todays_entries&.any? %>
+      <div class="space-y-2">
+        <% @todays_entries.each do |entry| %>
+          <div class="flex justify-between items-center py-2 border-b">
+            <div>
+              <span class="font-medium"><%= entry.category.name %></span>
+              <span class="text-sm text-gray-500 ml-2"><%= entry.date.strftime("%b %d") %> at <%= Time.parse("#{entry.hour}:00").strftime("%-l %p") %></span>
+            </div>
+            <span class="text-sm font-medium"><%= entry.duration_minutes %> min</span>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-gray-500">No time entries yet. Start tracking your time!</p>
+    <% end %>
+  </div>
+</div>

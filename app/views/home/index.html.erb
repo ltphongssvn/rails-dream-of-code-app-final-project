@@ -1,0 +1,168 @@
+<%# app/views/home/index.html.erb %>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+  <div class="container mx-auto px-4 py-12">
+
+    <% if authenticated? %>
+      <%# Content for authenticated users - Dashboard-style welcome %>
+      <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+          <h1 class="text-4xl font-bold text-gray-800 mb-4">
+            Welcome Back to Your Time Tracker
+          </h1>
+          <p class="text-lg text-gray-600 mb-6">
+            Ready to log your activities and track your progress? Choose where you'd like to go:
+          </p>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <%# Quick access card for Time Entries %>
+            <div class="bg-blue-50 rounded-lg p-6 hover:shadow-md transition-shadow">
+              <h3 class="text-xl font-semibold text-blue-900 mb-3">
+                📊 Time Entries
+              </h3>
+              <p class="text-gray-700 mb-4">
+                Log what you did each hour and see your daily timeline
+              </p>
+              <%= link_to "View Time Entries", time_entries_path,
+                  class: "inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors" %>
+            </div>
+
+            <%# Quick access card for Goals %>
+            <div class="bg-green-50 rounded-lg p-6 hover:shadow-md transition-shadow">
+              <h3 class="text-xl font-semibold text-green-900 mb-3">
+                🎯 Goals
+              </h3>
+              <p class="text-gray-700 mb-4">
+                Set targets and track your progress over time
+              </p>
+              <%= link_to "Manage Goals", goals_path,
+                  class: "inline-block bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors" %>
+            </div>
+
+            <%# Quick access card for Categories %>
+            <div class="bg-purple-50 rounded-lg p-6 hover:shadow-md transition-shadow">
+              <h3 class="text-xl font-semibold text-purple-900 mb-3">
+                📁 Categories
+              </h3>
+              <p class="text-gray-700 mb-4">
+                Organize your activities into meaningful categories
+              </p>
+              <%= link_to "Manage Categories", categories_path,
+                  class: "inline-block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors" %>
+            </div>
+
+            <%# Quick access card for Reports %>
+            <div class="bg-orange-50 rounded-lg p-6 hover:shadow-md transition-shadow">
+              <h3 class="text-xl font-semibold text-orange-900 mb-3">
+                📈 Reports
+              </h3>
+              <p class="text-gray-700 mb-4">
+                Analyze your time usage patterns and trends
+              </p>
+              <%= link_to "View Reports", dashboard_path,
+                  class: "inline-block bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors" %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <% else %>
+      <%# Content for unauthenticated visitors - Marketing/landing page %>
+      <div class="max-w-5xl mx-auto">
+        <%# Hero section %>
+        <div class="text-center mb-16">
+          <h1 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+            Track Your Time,<br/>
+            <span class="text-blue-600">Transform Your Days</span>
+          </h1>
+          <p class="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            A simple, powerful way to log what you do each hour and understand how you spend your time. Compare patterns, set goals, and build better habits.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <%= link_to "Get Started", new_registration_path,
+                class: "bg-blue-600 text-white text-lg px-8 py-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-lg" %>
+            <%= link_to "Sign In", new_session_path,
+                class: "bg-white text-blue-600 text-lg px-8 py-4 rounded-lg hover:bg-gray-50 transition-colors font-semibold border-2 border-blue-600" %>
+          </div>
+        </div>
+
+        <%# Features section %>
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-xl p-8 md:p-12 mb-12 text-white">
+          <h2 class="text-3xl font-bold mb-8 text-center">
+            How It Works
+          </h2>
+
+          <div class="grid md:grid-cols-3 gap-8">
+            <%# Feature 1: Hourly Logging %>
+            <div class="text-center">
+              <div class="text-5xl mb-4">⏰</div>
+              <h3 class="text-xl font-semibold mb-3">
+                Log Every Hour
+              </h3>
+              <p class="text-blue-100">
+                Record what you did for each hour of your day. Categorize activities like work, study, exercise, or relaxation.
+              </p>
+            </div>
+
+            <%# Feature 2: Historical Comparison %>
+            <div class="text-center">
+              <div class="text-5xl mb-4">📊</div>
+              <h3 class="text-xl font-semibold mb-3">
+                Compare Patterns
+              </h3>
+              <p class="text-blue-100">
+                See what you were doing at the same time yesterday, last week, or last month. Identify trends and patterns in your behavior.
+              </p>
+            </div>
+
+            <%# Feature 3: Goal Setting %>
+            <div class="text-center">
+              <div class="text-5xl mb-4">🎯</div>
+              <h3 class="text-xl font-semibold mb-3">
+                Set Smart Goals
+              </h3>
+              <p class="text-blue-100">
+                Create goals based on your history. Track progress and build consistent habits over time.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <%# Benefits section %>
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-xl p-8 md:p-12 text-white">
+          <h2 class="text-3xl font-bold mb-8 text-center">
+            Who Is This For?
+          </h2>
+
+          <div class="grid md:grid-cols-3 gap-6">
+            <div class="bg-blue-700 bg-opacity-30 rounded-lg p-6">
+              <h3 class="text-xl font-semibold mb-3">📚 Students</h3>
+              <p class="text-white">
+                Track study hours, maintain consistent learning habits, and balance academics with other activities.
+              </p>
+            </div>
+
+            <div class="bg-blue-700 bg-opacity-30 rounded-lg p-6">
+              <h3 class="text-xl font-semibold mb-3">💼 Professionals</h3>
+              <p class="text-white">
+                Balance work, exercise, and personal time. Understand where your productive hours go.
+              </p>
+            </div>
+
+            <div class="bg-blue-700 bg-opacity-30 rounded-lg p-6">
+              <h3 class="text-xl font-semibold mb-3">🌱 Growth Seekers</h3>
+              <p class="text-white">
+                Anyone interested in optimizing daily routines and understanding their time usage patterns.
+              </p>
+            </div>
+          </div>
+
+          <div class="text-center mt-8">
+            <%= link_to "Start Tracking Your Time Today", new_registration_path,
+                class: "inline-block bg-white text-blue-600 text-lg px-8 py-4 rounded-lg hover:bg-gray-100 transition-colors font-semibold shadow-lg" %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+  </div>
+</div>

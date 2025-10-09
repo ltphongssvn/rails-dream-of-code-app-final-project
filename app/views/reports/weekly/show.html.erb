@@ -1,0 +1,80 @@
+<!-- app/views/reports/weekly/show.html.erb -->
+<div class="weekly-report">
+  <h1>Weekly Time Report</h1>
+  <h2><%= @week_start.strftime("%B %d") %> - <%= @week_end.strftime("%B %d, %Y") %></h2>
+  
+  <div class="report-summary">
+    <h3>Week Summary</h3>
+    <p>Total time tracked: <%= (@total_minutes / 60.0).round(1) %> hours (<%= @total_minutes %> minutes)</p>
+    <p>Daily average: <%= (@daily_average / 60.0).round(1) %> hours (<%= @daily_average %> minutes)</p>
+    
+    <% if @total_goals_count > 0 %>
+      <p>Goals achieved: <%= @achieved_goals_count %> / <%= @total_goals_count %> opportunities</p>
+      <p>Week achievement rate: <%= @achievement_percentage %>%</p>
+    <% end %>
+  </div>
+  
+  <% if @time_by_category && @time_by_category.any? %>
+    <div class="category-breakdown">
+      <h3>Time by Category (Week Total)</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Total Time</th>
+            <th>Daily Average</th>
+            <th>Percentage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @time_by_category.each do |category_name, minutes| %>
+            <tr>
+              <td><%= category_name %></td>
+              <td><%= minutes %> min</td>
+              <td><%= (minutes / 7.0).round(1) %> min</td>
+              <td><%= @total_minutes > 0 ? ((minutes.to_f / @total_minutes) * 100).round(1) : 0 %>%</td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+  
+  <% if @time_by_date && @time_by_date.any? %>
+    <div class="daily-breakdown">
+      <h3>Daily Breakdown</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Day</th>
+            <th>Total Minutes</th>
+            <th>Achievement</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% (@week_start..@week_end).each do |date| %>
+            <tr>
+              <td><%= date.strftime("%m/%d") %></td>
+              <td><%= date.strftime("%A") %></td>
+              <td><%= @time_by_date[date] || 0 %></td>
+              <td>
+                <% if @achievement_by_day && @achievement_by_day[date] %>
+                  <%= @achievement_by_day[date] %>%
+                <% else %>
+                  -
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+  
+  <div class="navigation-links">
+    <%= link_to "Previous Week", reports_weekly_path(date: @week_start - 1.week) %>
+    <%= link_to "Current Week", reports_weekly_path %>
+    <%= link_to "Next Week", reports_weekly_path(date: @week_start + 1.week) %>
+  </div>
+</div>

@@ -1,0 +1,52 @@
+cat > app/views/reports/categories/index.html.erb << 'EOF'
+<!-- app/views/reports/categories/index.html.erb -->
+<div class="category-breakdown">
+  <h1>Category Time Breakdown</h1>
+
+  <% if @date_range %>
+    <h2><%= @start_date.strftime("%B %d, %Y") %> - <%= @end_date.strftime("%B %d, %Y") %></h2>
+  <% else %>
+    <h2>All Time</h2>
+  <% end %>
+
+  <div class="summary">
+    <p>Total time tracked: <%= (@total_minutes / 60.0).round(1) %> hours</p>
+    <% if @active_categories_count %>
+      <p>Active categories: <%= @active_categories_count %></p>
+    <% end %>
+  </div>
+
+  <% if @category_breakdown.any? %>
+    <table class="category-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Direct Time</th>
+          <th>Total Time</th>
+          <th>Percentage</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @category_breakdown.each do |cb| %>
+          <tr>
+            <td><%= cb[:category].name %></td>
+            <td><%= cb[:direct_minutes] %> min</td>
+            <td><%= cb[:total_minutes] %> min</td>
+            <td><%= cb[:percentage] %>%</td>
+          </tr>
+          <% cb[:subcategories].each do |sc| %>
+            <tr class="subcategory">
+              <td>&nbsp;&nbsp;└ <%= sc[:category].name %></td>
+              <td><%= sc[:direct_minutes] %> min</td>
+              <td>-</td>
+              <td><%= sc[:percentage] %>%</td>
+            </tr>
+          <% end %>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p>No time entries found.</p>
+  <% end %>
+</div>
+EOF
