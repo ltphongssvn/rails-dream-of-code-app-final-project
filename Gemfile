@@ -76,6 +76,6 @@ group :test do
   # Capybara for integration testing
   gem "capybara", "~> 3.39"
   # Selenium webdriver for JavaScript testing
-  gem "selenium-webdriver", "~> 4.16"
+  gem "selenium-webdriver", "~> 4.38"
 end
 gem 'rails-controller-testing', group: :test
