@@ -59,7 +59,7 @@ end
 # Testing gems - Added for RSpec as per project requirements
 group :development, :test do
   # RSpec testing framework for Rails
-  gem "rspec-rails", "~> 6.1"
+  gem "rspec-rails", "~> 8.0"
   # Factory Bot for creating test data
   gem "factory_bot_rails", "~> 6.4"
   # Faker for generating realistic test data
